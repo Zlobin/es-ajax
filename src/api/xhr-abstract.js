@@ -1,0 +1,150 @@
+import { methods } from './utils/methods';
+import internal from './utils/internal';
+import methodsOverride from './utils/methods-override';
+
+export default class XhrAbstract {
+  constructor(/* url, request = {}, headers = {} */) {
+    return this;
+  }
+
+  _prepareUrlParams(body) {
+    // @todo parameters body[key] may be array.
+    return Object
+      .keys(body)
+      .map(key => `${key}=${body[key]}`)
+      .join('&');
+  }
+
+  _checkOverride(method = []) {
+    if (!(method instanceof Array)) {
+      throw new TypeError('"method" variable must be an Array.');
+    }
+
+    const options = self.options;
+
+    return new Promise((resolve, reject) => {
+      function shouldOverride(override) {
+        return override ? reject() : resolve();
+      }
+
+      options
+        .then(response => {
+          const allowHeader = (response.headers || {}).Allow.split(',') || [];
+          let numberAllows = 0;
+
+          allowHeader.forEach(element =>
+            (method.indexOf(element) > -1 ? numberAllows++ : 0)
+          );
+
+          shouldOverride(numberAllows !== method.length);
+        })
+        .catch(() => shouldOverride(true));
+    });
+  }
+
+  _methodOverride(methodName) {
+    this.setHeaders(methodsOverride(methodName));
+  }
+
+  head() {
+    this.setRequest({
+      method: methods.head,
+      body: null
+    });
+
+    return this.send();
+  }
+
+  options() {
+    this.setRequest({
+      method: methods.options,
+      body: null
+    });
+
+    return this.send();
+  }
+
+  get(data = null) {
+    this.setRequest({
+      method: methods.get,
+      body: data
+    });
+
+    return this.send();
+  }
+
+  file(data = null) {
+    return this.post(data);
+  }
+
+  post(data = null) {
+    this.setRequest({
+      method: methods.post,
+      body: data
+    });
+
+    return this.send();
+  }
+
+  delete(data = null) {
+    const shouldOverride = internal(this)._shouldOverride;
+
+    this.setRequest({
+      method: shouldOverride ? methods.post : methods.delete,
+      body: data
+    });
+
+    if (shouldOverride) {
+      this._methodOverride(methods.delete);
+    }
+
+    return this.send();
+  }
+
+  put(data = null) {
+    const shouldOverride = internal(this)._shouldOverride;
+
+    this.setRequest({
+      method: shouldOverride ? methods.post : methods.put,
+      body: data
+    });
+
+    if (shouldOverride) {
+      this._methodOverride(methods.put);
+    }
+
+    return this.send();
+  }
+
+  send() {
+    //
+  }
+
+  cancel() {
+    //
+  }
+
+  onProgress(/* callback */) {
+    //
+  }
+
+  hasHeader(/* header */) {
+    //
+  }
+
+  setHeaders(/* headers */) {
+    //
+  }
+
+  setRequest(/* request */) {
+    //
+  }
+
+  setTimeout(/* timeout */) {
+    //
+  }
+
+  onBeforeSend(/* callback */) {
+    // ...
+  }
+}
