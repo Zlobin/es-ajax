@@ -27,7 +27,7 @@ if (isProduction) {
 module.exports = {
   devtool: !isProduction ? 'cheap-source-map' : 'eval',
   entry: './src/index.js',
-  watch: true,
+  watch: false,
   output: {
     path: path.join(__dirname, 'dist'),
     filename: 'bundle.js',
@@ -42,15 +42,15 @@ module.exports = {
     preLoaders: [
       {
         test: /\.js$/,
-        loader: 'eslint-loader',
-        include: path.join(__dirname, 'src')
+        include: path.join(__dirname, 'src'),
+        loader: 'eslint-loader'
       }
     ],
     loaders: [
       {
         test: /\.js$/,
-        loaders: [ 'babel' ],
-        include: path.join(__dirname, 'src')
+        include: path.join(__dirname, 'src'),
+        loaders: ['babel']
       }
     ]
   }

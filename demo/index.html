@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+  <body>
+    <script src="../dist/bundle.js"></script>
+    <script>
+      var URL = '/demo';
+      var parameters = {
+        headers: {
+          'foo': 'bar',
+          'bar': 'baz'
+        }
+      };
+
+      var xhrHead = ajax(URL);
+      var xhrOptions = ajax(URL);
+      var xhrGet = ajax(URL);
+      var xhrPost = ajax(URL, parameters);
+      var xhrPut = ajax(URL);
+      var xhrDelete = ajax(URL);
+      var xhrFile = ajax(URL);
+
+      var headId = xhrHead.getXhrId();
+      var postId = xhrPost.getXhrId();
+
+      console.log('HeadXhrId', headId);
+      console.log('postXhrId', postId);
+
+      xhrOptions.options()
+        .then(function(response) {
+          console.log('OPTIONS OK', response);
+        })
+        .catch(function(response) {
+          console.warn('OPTIONS FAILED', response);
+        });
+
+      ajax(URL)
+        .setOverride(['PUT', 'DELETE'], function(isOverriden) {
+          console.log('isOverriden=' + isOverriden);
+        });
+
+      xhrHead.head()
+        .then(function(response) {
+          console.log('HEAD OK', response);
+        })
+        .catch(function(response) {
+          // response.status
+          // response.response
+          console.warn('HEAD FAILED', response);
+        });
+
+      xhrGet.get(parameters.headers)
+        .then(function(response) {
+          console.log('GET OK', response);
+        })
+        .catch(function(response) {
+          console.warn('GET FAILED', response);
+        });
+
+      xhrPost.post(parameters.headers)
+        .then(function(response) {
+          console.log('POST OK', response);
+        })
+        .catch(function(response) {
+          console.warn('POST FAILED', response);
+        });
+
+      xhrPut.put(parameters.headers)
+        .then(function(response) {
+          console.log('PUT OK', response);
+        })
+        .catch(function(response) {
+          console.warn('PUT FAILED', response);
+        });
+
+      xhrDelete.del(parameters.headers)
+        .then(function(response) {
+          console.log('DELETE OK', response);
+        })
+        .catch(function(response) {
+          console.warn('DELETE FAILED', response);
+        });
+
+      var allRequests = ajax().getAllRequests();
+      console.log('all reqs', allRequests);
+    </script>
+  </body>
+</html>

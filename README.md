@@ -1,12 +1,17 @@
 
-# Ajax (HEAD, OPTIONS, GET, POST, PUT, DELETE) requests in JavaScript
+# Ajax requests in JavaScript
 
 ## Synopsis
 
+This library is for working with (a)synchonously HTTP-requests (HEAD, OPTIONS, GET, POST, PUT, DELETE) in a browser.
+
+All work is based on promises approach. It allows to avoid callback hell.
+
+The library is affording have full control for each external requests. Through API we can cancel current request, abort all active requests, get meta-information for each request\response (starting and ending time, headers). Also we can have number of (non)success responses by define URL. The library allows to create a "singleton" request, which can be sent only once in one time.
 
 ## Dependencies
 
-Only one dependency: object-hash.
+Only one dependency: [object-hash](https://www.npmjs.com/package/object-hash).
 
 ## Examples
 
@@ -18,7 +23,8 @@ Or
 <script src="<PATH/TO/LIBRARY>/dist/bundle.js">
 ```
 
-```javascript
+```js
+// GET
 ajax('/some/url')
   .get()
   .then(function(response) {
@@ -28,6 +34,7 @@ ajax('/some/url')
     // ...
   });
 
+// GET with parameters
 ajax('/some/url')
   // /some/url?foo=bar&bar=baz
   .get({
@@ -36,6 +43,7 @@ ajax('/some/url')
   })
   // ...
 
+// POST with parameters
 ajax('/some/url')
   .post({
     // ...
@@ -62,20 +70,31 @@ ajax('/some/url')
   .catch(function(err) {
     console.log(err);
   });
-
-  // @todo
-  // - Get list all active requests.
-  // - Stop all requests.
-  // - Stop request with an ID.
-  // - Get meta-data for request by an ID.
-  // -- number of done(fail) responses
-  // ...
-
 ```
+
+## API
+
+##### Static, may user without any XHR.
+- **<code>abortAll</code> Stop all active requests**
+- **<code>getXhrId</code> Get uniq id of the current request**
+- **<code>getXhrMeta</code> Get meta info for the current request**
+- **<code>getAllRequests</code> Get info about each sent request**
+- **<code>setTimeout</code> Set timeout when reqeust should be canceled automatically**
+##### Non-static, should be used with a XHR (fetch) instance.
+- **<code>setOverride</code> Set override for DELETE, PUT requests**
+- **<code>options</code> Send HTTP `OPTIONS` request**
+- **<code>head</code> Send HTTP `HEAD` request**
+- **<code>get</code> Send HTTP `GET` request**
+- **<code>post</code> Send HTTP `POST` request**
+- **<code>put</code> Send HTTP `PUT` request**
+- **<code>del</code> Send HTTP `DELETE` request**
+- **<code>file</code> Upload a file**
+- **<code>cancel</code> Candel current active request**
+- **<code>onProgress</code> Add callback for progress file uploading - returns percentage**
 
 ## Testing
 
-Tests are performed using "mocha", "sinon" and "expect" library and "karma" as a server. Run `npm test`.
+Tests are performed using "mocha", "sinon", "expect" libraries, PhantomJS as a browser and "karma" as a server. Run `npm test`.
 
 ## Building the documentation
 

@@ -1,11 +1,10 @@
-'use strict';
-
 import guid from './utils/guid';
 import factory from './utils/factory';
 import objectHash from 'object-hash';
 
 const _requests = new Set();
 const _meta = new Map();
+let _timeout = 0;
 
 export function ajax(url, parameters = {}, requestId) {
   const defaults = {
@@ -16,6 +15,7 @@ export function ajax(url, parameters = {}, requestId) {
   };
   const settings = Object.assign({}, defaults, parameters);
   const xhrId = requestId || guid();
+  const self = this;
   let xhrApi;
 
   if (requestId !== void 0 && !_requests.has(xhrId)) {
@@ -42,10 +42,16 @@ export function ajax(url, parameters = {}, requestId) {
         headers,
         startTime: time
       });
+
+      xhrApi.setTimeout(_timeout);
     });
   }
 
-  function decorator(name) {
+  function proxy(name) {
+    if (xhrApi === void 0) {
+      throw new Error('URL must have.');
+    }
+
     switch (name) {
       case 'head':
         return () => xhrApi.head();
@@ -63,19 +69,19 @@ export function ajax(url, parameters = {}, requestId) {
         return data => xhrApi.file(data);
       case 'setOverride':
         return (method = [], callback) => xhrApi.setOverride(method, callback);
+      case 'cancel':
+        return () => {
+          xhrApi.cancel();
+          return self;
+        };
+      case 'onProgress':
+        return callback => {
+          xhrApi.onProgress(callback);
+          return self;
+        };
       default:
         throw new Error(`No method "${name}".`);
     }
-  }
-
-  function setTimeout(time) {
-    xhrApi.setTimeout(time);
-    return this;
-  }
-
-  function cancel() {
-    xhrApi.cancel();
-    return this;
   }
 
   function getXhrId() {
@@ -103,11 +109,13 @@ export function ajax(url, parameters = {}, requestId) {
       request.xhrApi && request.xhrApi.cancel()
     );
 
-    return this;
+    return self;
   }
 
-  function onProgress() {
-    // @todo
+  function setTimeout(time) {
+    _timeout = time;
+
+    return self;
   }
 
   return {
@@ -116,17 +124,17 @@ export function ajax(url, parameters = {}, requestId) {
     getXhrId,
     getXhrMeta,
     getAllRequests,
-    setOverride: decorator('setOverride'),
     setTimeout,
     // Non-static, should be used with a XHR (fetch) instance.
-    options: decorator('options'),
-    head: decorator('head'),
-    get: decorator('get'),
-    post: decorator('post'),
-    put: decorator('put'),
-    del: decorator('del'),
-    file: decorator('del'),
-    cancel,
-    onProgress
+    setOverride: proxy('setOverride'),
+    options: proxy('options'),
+    head: proxy('head'),
+    get: proxy('get'),
+    post: proxy('post'),
+    put: proxy('put'),
+    del: proxy('del'),
+    file: proxy('del'),
+    cancel: proxy('cancel'),
+    onProgress: proxy('onProgress')
   };
 }
