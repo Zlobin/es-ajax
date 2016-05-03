@@ -1,87 +1,101 @@
 <!doctype html>
 <html>
   <body>
+    <label for="xhr-id">URL:
+      <input type="text" name="url" value="/demo/server.php" id="url">
+    </label><br>
+    <label for="timeout">Timeout:
+      <input type="text" name="timeout" value="0" id="timeout">
+    </label><br>
+    <label for="type">Content type:
+      <select name="type" id="type">
+        <option value="text">plain text</option>
+        <option value="json" selected>json</option>
+      </select>
+    </label><br>
+    <label for="method">Method:
+      <select name="method" id="method">
+        <option value="head">HEAD</option>
+        <option value="options">OPTIONS</option>
+        <option value="get" selected>GET</option>
+        <option value="post">POST</option>
+        <option value="put">PUT</option>
+        <option value="del">DELETE</option>
+        <option value="file">FILE</option>
+      </select>
+    </label><br>
+    <label for="xhr-id">REQUEST id:
+      <input type="text" style="width: 400px" name="xhr-id" disabled value="" id="xhr-id">
+    </label><br>
+    <label for="output">Output:
+      <div style="width: 500px; height: 200px; overflow: scroll">
+        <pre>
+          <code id="output"></code>
+        </pre>
+      </div>
+    </label><br><br>
+    <button id="send">Send</button> |
+    <button id="cancel">Cancel</button> |
+    <button id="all">Get all requests</button> |
+    <button id="apply-middleware">Apply middleware</button> |
+    <button id="clear-middleware">Clear middleware</button>
+
     <script src="../dist/bundle.js"></script>
     <script>
-      var URL = '/demo';
-      var parameters = {
-        headers: {
-          'foo': 'bar',
-          'bar': 'baz'
-        }
-      };
+      (function(document, ajax) {
+        var send = document.getElementById('send');
+        var all = document.getElementById('all');
+        var xhrId = document.getElementById('xhr-id');
+        var output = document.getElementById('output');
+        var activeRequest = null;
 
-      var xhrHead = ajax(URL);
-      var xhrOptions = ajax(URL);
-      var xhrGet = ajax(URL);
-      var xhrPost = ajax(URL, parameters);
-      var xhrPut = ajax(URL);
-      var xhrDelete = ajax(URL);
-      var xhrFile = ajax(URL);
+        send.addEventListener('click', function(event) {
+          var url = document.getElementById('url').value;
+          var method = document.getElementById('method').value;
+          var type = document.getElementById('type').value;
+          var timeout = parseInt(document.getElementById('timeout'), 10);
+          var parameters = {
+            type: type,
+            headers: {
+              'foo': 'bar',
+              'bar': 'baz'
+            }
+          };
+          var request = ajax(url, parameters);
+          var id = request.getXhrId();
 
-      var headId = xhrHead.getXhrId();
-      var postId = xhrPost.getXhrId();
+          activeRequest = request;
+          // request.setTimeout(timeout);
 
-      console.log('HeadXhrId', headId);
-      console.log('postXhrId', postId);
+          if (timeout > 0) {
+            // set timeout as a request parameter.
+          }
 
-      xhrOptions.options()
-        .then(function(response) {
-          console.log('OPTIONS OK', response);
-        })
-        .catch(function(response) {
-          console.warn('OPTIONS FAILED', response);
+          xhrId.value = id.toString();
+          request[method]()
+            .then(function(response) {
+              // response.status
+              // response.response
+              // ...
+              output.innerHTML = JSON.stringify(response, undefined, 4);
+            })
+            .catch(function(response) {
+              output.innerHTML = JSON.stringify(response, undefined, 4);
+            });
         });
 
-      ajax(URL)
-        .setOverride(['PUT', 'DELETE'], function(isOverriden) {
-          console.log('isOverriden=' + isOverriden);
+        cancel.addEventListener('click', function(event) {
+          if (activeRequest !== null) {
+            activeRequest.cancel();
+          }
         });
 
-      xhrHead.head()
-        .then(function(response) {
-          console.log('HEAD OK', response);
-        })
-        .catch(function(response) {
-          // response.status
-          // response.response
-          console.warn('HEAD FAILED', response);
-        });
+        all.addEventListener('click', function(event) {
+          var allRequests = ajax().getAllRequests();
 
-      xhrGet.get(parameters.headers)
-        .then(function(response) {
-          console.log('GET OK', response);
-        })
-        .catch(function(response) {
-          console.warn('GET FAILED', response);
+          output.value = 'All requests';
         });
-
-      xhrPost.post(parameters.headers)
-        .then(function(response) {
-          console.log('POST OK', response);
-        })
-        .catch(function(response) {
-          console.warn('POST FAILED', response);
-        });
-
-      xhrPut.put(parameters.headers)
-        .then(function(response) {
-          console.log('PUT OK', response);
-        })
-        .catch(function(response) {
-          console.warn('PUT FAILED', response);
-        });
-
-      xhrDelete.del(parameters.headers)
-        .then(function(response) {
-          console.log('DELETE OK', response);
-        })
-        .catch(function(response) {
-          console.warn('DELETE FAILED', response);
-        });
-
-      var allRequests = ajax().getAllRequests();
-      console.log('all reqs', allRequests);
+      })(document, ajax);
     </script>
   </body>
 </html>

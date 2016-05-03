@@ -1,28 +1,45 @@
 import guid from './utils/guid';
 import factory from './utils/factory';
+import { contentTypes } from './utils/content-types';
 import objectHash from 'object-hash';
 
 const _requests = new Set();
 const _meta = new Map();
 let _timeout = 0;
+let _middleware = [];
 
-export function ajax(url, parameters = {}, requestId) {
+export function ajax(url, parameters = {}) {
   const defaults = {
     isSingleton: false,
     api: 'xhr', // xhr || fetch
+    type: 'json', // text || json || html
     headers: {},
     request: {}
   };
   const settings = Object.assign({}, defaults, parameters);
-  const xhrId = requestId || guid();
   const self = this;
+  const xhrId = parameters.id || guid();
   let xhrApi;
+  let meta;
 
-  if (requestId !== void 0 && !_requests.has(xhrId)) {
-    throw new Error('Request with ID did not found.');
+  if (parameters.type !== void 0 && contentTypes[parameters.type]) {
+    settings.headers['Content-Type'] = contentTypes[parameters.type];
   }
 
-  if (url) {
+  if (parameters.id !== void 0) {
+    // Check if xhrApi with xhrId is exists.
+    if (!_requests.has(xhrId)) {
+      throw new Error('Request with ID did not found.');
+    } else {
+      // Get API instance from the meta.
+      meta = _meta.get(xhrId);
+      xhrApi = meta.xhrAPI;
+      url = meta.url;
+    }
+  }
+
+  if (!xhrApi && url) {
+    // Create new instance.
     xhrApi = factory(settings.api, url, settings.request, settings.headers);
     xhrApi.onBeforeSend(params => {
       const { headers, request, time } = params;
@@ -42,14 +59,17 @@ export function ajax(url, parameters = {}, requestId) {
         headers,
         startTime: time
       });
-
-      xhrApi.setTimeout(_timeout);
     });
+
+    xhrApi.setTimeout(_timeout);
+    if (_middleware.length) {
+      xhrApi.applyMiddleware(_middleware);
+    }
   }
 
   function proxy(name) {
     if (xhrApi === void 0) {
-      throw new Error('URL must have.');
+      throw new Error('API was not instantiated.');
     }
 
     switch (name) {
@@ -80,7 +100,7 @@ export function ajax(url, parameters = {}, requestId) {
           return self;
         };
       default:
-        throw new Error(`No method "${name}".`);
+        throw new Error(`No method with name "${name}".`);
     }
   }
 
@@ -118,13 +138,20 @@ export function ajax(url, parameters = {}, requestId) {
     return self;
   }
 
+  function applyMiddleware(functions) {
+    _middleware = functions;
+
+    return self;
+  }
+
   return {
-    // Static, may user without any XHR.
+    // Static, may be used without any XHR instance.
     abortAll,
     getXhrId,
     getXhrMeta,
     getAllRequests,
     setTimeout,
+    applyMiddleware,
     // Non-static, should be used with a XHR (fetch) instance.
     setOverride: proxy('setOverride'),
     options: proxy('options'),

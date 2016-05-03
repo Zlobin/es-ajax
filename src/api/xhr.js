@@ -18,6 +18,8 @@ export default class XhrAPI extends XhrAbstract {
 
     self._shouldOverride = true;
     self._onBeforeSend = null;
+    self._middleware = [];
+    self._onProgress = null;
     self._timeout = null;
     self._defaultHeaders = {
       'Content-Type': 'text/plain'
@@ -41,6 +43,20 @@ export default class XhrAPI extends XhrAbstract {
       .setRequest(request);
 
     return this;
+  }
+
+  applyMiddleware(functions) {
+    if (!functions instanceof Array) {
+      throw new Error('Parameter should be an Array.');
+    }
+
+    functions.forEach(
+      func => {
+        if (typeof func === 'function') {
+          self._middleware.push(func);
+        }
+      }
+    );
   }
 
   setOverride(method = [], callback = () => {}) {
@@ -114,16 +130,18 @@ export default class XhrAPI extends XhrAbstract {
 
         xhr.addEventListener('progress', (e) => {
           let progressValue = null;
+          const onProgress = internal(this)._onProgress;
+
+          if (onProgress === null) {
+            return;
+          }
 
           if (e.lengthComputable) {
             // Get progress in percentage.
             progressValue = e.loaded / e.total * 100;
           }
 
-          // @todo
-          // this.onProgress.call(null, progressValue);
-
-          return progressValue;
+          internal(this)._onProgress(progressValue);
         }, false);
 
         // Send headers.
@@ -140,6 +158,17 @@ export default class XhrAPI extends XhrAbstract {
             time: Date.now()
           });
         }
+
+        /*
+        @todo middleware
+        if (self._middleware.length) {
+          self._middleware.forEach(
+            func => {
+              func(params);
+            }
+          );
+        }
+        */
 
         xhr.send(body);
       } catch (error) {
@@ -164,7 +193,8 @@ export default class XhrAPI extends XhrAbstract {
       throw new TypeError(`${callback} must be a function.`);
     }
 
-    // @todo
+    internal(this)._onProgress = callback;
+
     return this;
   }
 

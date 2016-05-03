@@ -20,14 +20,15 @@ export default class XhrAbstract {
       throw new TypeError('"method" variable must be an Array.');
     }
 
-    const options = self.options;
+    const optionsRequest = this.options.bind(this);
+    console.log('optionsRequest', optionsRequest);
 
     return new Promise((resolve, reject) => {
       function shouldOverride(override) {
         return override ? reject() : resolve();
       }
 
-      options
+      optionsRequest()
         .then(response => {
           const allowHeader = (response.headers || {}).Allow.split(',') || [];
           let numberAllows = 0;
@@ -44,6 +45,10 @@ export default class XhrAbstract {
 
   _methodOverride(methodName) {
     this.setHeaders(methodsOverride(methodName));
+  }
+
+  applyMiddleware() {
+    // ...
   }
 
   head() {
@@ -74,6 +79,7 @@ export default class XhrAbstract {
   }
 
   file(data = null) {
+    // @todo data can be an array of files.
     return this.post(data);
   }
 
