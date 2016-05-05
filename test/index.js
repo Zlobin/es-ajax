@@ -71,7 +71,8 @@ describe('1. es-ajax test', () => {
       'PUT',
       'HEAD',
       'OPTIONS',
-      'DELETE'
+      'DELETE',
+      'FILE'
     ].forEach(method =>
       it(`1.2.${++i}: should send "${method}" request`, done =>
         send(URL, method, done))

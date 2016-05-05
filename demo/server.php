@@ -4,7 +4,7 @@
   $type = $_SERVER['CONTENT_TYPE'];
   $override = $_SERVER['HTTP_X_HTTP_METHOD'];
   $method = $_SERVER['REQUEST_METHOD'];
-  $uploadDir = '/home/eugene/projects/es-ajax/demo/uploads/';
+  $uploadDir = 'uploads/';
 
   $response = [
     'foo' => 'bar',

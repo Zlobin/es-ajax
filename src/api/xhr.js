@@ -31,8 +31,7 @@ export default class XhrAPI extends XhrAbstract {
     self._defaultRequest = {
       method: methods.get,
       async: true,
-      body: null,
-      timeout: 0
+      body: null
     };
     self._url = url;
 
@@ -111,7 +110,6 @@ export default class XhrAPI extends XhrAbstract {
 
       try {
         xhr.open(method, url, async);
-        xhr.timeout = self._timeout;
 
         xhr.onload = xhr.onerror = function onload() {
           // 0 - undefined
@@ -170,6 +168,8 @@ export default class XhrAPI extends XhrAbstract {
             time: Date.now()
           });
         }
+
+        xhr.timeout = self._timeout;
 
         /*
         @todo middleware

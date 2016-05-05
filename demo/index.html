@@ -121,15 +121,14 @@
 
           activeRequest = request;
           // Translate timeout from seconds to ms.
-          request
-            .setTimeout(timeout * 1000)
-            .onProgress(onProgress);
+          request.setTimeout(timeout * 1000);
 
           xhrId.value = request.getXhrId().toString();
 
           if (method.value === 'file') {
             if (file.files.length) {
               params = prepareFile('file');
+              request.onProgress(onProgress);
             } else {
               output.innerHTML = 'You should select a file';
               return;
