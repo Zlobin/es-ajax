@@ -11,7 +11,7 @@ The library is affording have full control for each external requests. Through A
 
 ## Dependencies
 
-Only one dependency: [object-hash](https://www.npmjs.com/package/object-hash).
+Dependencies: [object-hash](https://www.npmjs.com/package/object-hash), [qs](https://www.npmjs.com/package/qs)
 
 ## Examples
 
@@ -165,3 +165,4 @@ You can grab minified versions of es-ajax from /dist path after running `webpack
 2. Send file(s)
 3. Add more tests
 4. Finish demo
+5. Singleton request

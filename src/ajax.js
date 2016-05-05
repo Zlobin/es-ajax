@@ -2,6 +2,7 @@ import guid from './utils/guid';
 import factory from './utils/factory';
 import { contentTypes } from './utils/content-types';
 import objectHash from 'object-hash';
+import { is } from './utils/is';
 
 const _requests = new Set();
 const _meta = new Map();
@@ -17,12 +18,11 @@ export function ajax(url, parameters = {}) {
     request: {}
   };
   const settings = Object.assign({}, defaults, parameters);
-  const self = this;
   const xhrId = parameters.id || guid();
   let xhrApi;
   let meta;
 
-  if (parameters.type !== void 0 && contentTypes[parameters.type]) {
+  if (is._undefined(parameters.type) && contentTypes[parameters.type]) {
     settings.headers['Content-Type'] = contentTypes[parameters.type];
   }
 
@@ -45,8 +45,9 @@ export function ajax(url, parameters = {}) {
       const { headers, request, time } = params;
       const hash = objectHash({
         url,
-        method: request.method || '',
-        body: request.body || ''
+        method: request.method || ''
+        // @todo broken for file sending.
+        // body: request.body || ''
       });
 
       _requests.add(xhrId);
@@ -59,16 +60,19 @@ export function ajax(url, parameters = {}) {
         headers,
         startTime: time
       });
+
+      xhrApi.setTimeout(_timeout);
     });
 
-    xhrApi.setTimeout(_timeout);
     if (_middleware.length) {
       xhrApi.applyMiddleware(_middleware);
     }
   }
 
   function proxy(name) {
-    if (xhrApi === void 0) {
+    const self = this;
+
+    if (is._undefined(xhrApi)) {
       throw new Error('API was not instantiated.');
     }
 
@@ -116,7 +120,7 @@ export function ajax(url, parameters = {}) {
     const response = {};
 
     _requests.forEach(value => {
-      if (value !== void 0) {
+      if (is._undefined(value)) {
         response[value] = _meta.get(value);
       }
     });
@@ -129,19 +133,19 @@ export function ajax(url, parameters = {}) {
       request.xhrApi && request.xhrApi.cancel()
     );
 
-    return self;
+    return this;
   }
 
   function setTimeout(time) {
     _timeout = time;
 
-    return self;
+    return this;
   }
 
   function applyMiddleware(functions) {
     _middleware = functions;
 
-    return self;
+    return this;
   }
 
   return {
@@ -160,7 +164,7 @@ export function ajax(url, parameters = {}) {
     post: proxy('post'),
     put: proxy('put'),
     del: proxy('del'),
-    file: proxy('del'),
+    file: proxy('file'),
     cancel: proxy('cancel'),
     onProgress: proxy('onProgress')
   };

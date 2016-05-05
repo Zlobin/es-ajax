@@ -1,6 +1,7 @@
 import XhrAbstract from './xhr-abstract';
 import internal from './utils/internal';
 import { methods } from './utils/methods';
+import { is } from '../utils/is';
 
 export default class FetchAPI extends XhrAbstract {
   constructor(url, request = {}, headers = {}) {
@@ -59,7 +60,7 @@ export default class FetchAPI extends XhrAbstract {
   setHeaders(headers = {}) {
     const self = internal(this);
 
-    if (typeof headers !== 'object') {
+    if (!is._object(headers)) {
       throw new TypeError(`${headers} must be an object`);
     }
 
@@ -73,7 +74,7 @@ export default class FetchAPI extends XhrAbstract {
   setRequest(request = {}) {
     // const self = internal(this);
 
-    if (typeof request !== 'object') {
+    if (!is._object(request)) {
       throw new TypeError(`${request} must be an object`);
     }
 

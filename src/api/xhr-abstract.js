@@ -1,27 +1,19 @@
 import { methods } from './utils/methods';
 import internal from './utils/internal';
 import methodsOverride from './utils/methods-override';
+import { is } from '../utils/is';
 
 export default class XhrAbstract {
   constructor(/* url, request = {}, headers = {} */) {
     return this;
   }
 
-  _prepareUrlParams(body) {
-    // @todo parameters body[key] may be array.
-    return Object
-      .keys(body)
-      .map(key => `${key}=${body[key]}`)
-      .join('&');
-  }
-
   _checkOverride(method = []) {
-    if (!(method instanceof Array)) {
+    if (!is._array(method)) {
       throw new TypeError('"method" variable must be an Array.');
     }
 
     const optionsRequest = this.options.bind(this);
-    console.log('optionsRequest', optionsRequest);
 
     return new Promise((resolve, reject) => {
       function shouldOverride(override) {
@@ -80,16 +72,16 @@ export default class XhrAbstract {
 
   file(data = null) {
     // @todo data can be an array of files.
-    return this.post(data);
+    return this.post(data, true);
   }
 
-  post(data = null) {
+  post(data = null, isFile = false) {
     this.setRequest({
       method: methods.post,
       body: data
     });
 
-    return this.send();
+    return this.send(isFile);
   }
 
   delete(data = null) {

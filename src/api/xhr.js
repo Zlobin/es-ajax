@@ -1,14 +1,18 @@
+import qs from 'qs';
 import internal from './utils/internal';
 import XhrAbstract from './xhr-abstract';
 import { rejectInterface, resolveInterface } from './utils/resolve-reject-interface';
 import { methods } from './utils/methods';
 import asObject from './utils/as-object';
+import { is } from '../utils/is';
 
-// XHR2 specification.
-// @link https://xhr.spec.whatwg.org/
+/*
+  XHR2 specification.
+  @link https://xhr.spec.whatwg.org/
 
-// XHR2 examples.
-// @link http://www.html5rocks.com/en/tutorials/file/xhr2/
+  XHR2 examples.
+  @link http://www.html5rocks.com/en/tutorials/file/xhr2/
+*/
 
 export default class XhrAPI extends XhrAbstract {
   constructor(url, request = {}, headers = {}) {
@@ -46,13 +50,13 @@ export default class XhrAPI extends XhrAbstract {
   }
 
   applyMiddleware(functions) {
-    if (!functions instanceof Array) {
+    if (!is._array(functions)) {
       throw new Error('Parameter should be an Array.');
     }
 
     functions.forEach(
       func => {
-        if (typeof func === 'function') {
+        if (is._function(func)) {
           self._middleware.push(func);
         }
       }
@@ -71,7 +75,7 @@ export default class XhrAPI extends XhrAbstract {
   }
 
   onBeforeSend(callback) {
-    if (typeof callback !== 'function') {
+    if (!is._function(callback)) {
       throw new TypeError(`${callback} must be a function.`);
     }
 
@@ -80,15 +84,20 @@ export default class XhrAPI extends XhrAbstract {
     return this;
   }
 
-  send() {
+  setTimeout(timeout = 0) {
+    internal(this)._timeout = timeout;
+  }
+
+  send(isFile = false) {
     const self = internal(this);
     const xhr = self._xhr;
     const { method, async, body } = self._requests;
+    // Split an object into query-string like ?foo=bar&bar=baz
+    const data = is._object(body) && !isFile ? qs.stringify(body) : body;
     let url = self._url;
 
-    // Split object into URL like ?foo=bar&bar=baz
-    if (method === methods.get && body && typeof body === 'object') {
-      url += `?${this._prepareUrlParams(body)}`;
+    if (method === methods.get && data) {
+      url += `?${data}`;
     }
 
     return new Promise((resolve, reject) => {
@@ -102,6 +111,7 @@ export default class XhrAPI extends XhrAbstract {
 
       try {
         xhr.open(method, url, async);
+        xhr.timeout = self._timeout;
 
         xhr.onload = xhr.onerror = function onload() {
           // 0 - undefined
@@ -128,7 +138,7 @@ export default class XhrAPI extends XhrAbstract {
             asObject(this.getAllResponseHeaders()));
         };
 
-        xhr.addEventListener('progress', (e) => {
+        xhr.addEventListener('progress', event => {
           let progressValue = null;
           const onProgress = internal(this)._onProgress;
 
@@ -136,22 +146,24 @@ export default class XhrAPI extends XhrAbstract {
             return;
           }
 
-          if (e.lengthComputable) {
+          if (event.lengthComputable) {
             // Get progress in percentage.
-            progressValue = e.loaded / e.total * 100;
+            progressValue = event.loaded / event.total * 100;
           }
 
           internal(this)._onProgress(progressValue);
         }, false);
 
         // Send headers.
-        Object
-          .keys(self._headers)
-          .map(index =>
-            xhr.setRequestHeader(index, self._headers[index])
-          );
+        if (!isFile) {
+          Object
+            .keys(self._headers)
+            .map(index =>
+              xhr.setRequestHeader(index, self._headers[index])
+            );
+        }
 
-        if (typeof self._onBeforeSend === 'function') {
+        if (is._function(self._onBeforeSend)) {
           self._onBeforeSend({
             headers: self._headers,
             request: self._requests,
@@ -170,9 +182,9 @@ export default class XhrAPI extends XhrAbstract {
         }
         */
 
-        xhr.send(body);
+        xhr.send(data);
       } catch (error) {
-        rejected(null, error, asObject(xhr.getAllResponseHeaders()));
+        rejected(null, error, {});
       }
     });
   }
@@ -189,7 +201,7 @@ export default class XhrAPI extends XhrAbstract {
   }
 
   onProgress(callback) {
-    if (typeof callback !== 'function') {
+    if (!is._function(callback)) {
       throw new TypeError(`${callback} must be a function.`);
     }
 
@@ -205,7 +217,7 @@ export default class XhrAPI extends XhrAbstract {
   setHeaders(headers = {}) {
     const self = internal(this);
 
-    if (typeof headers !== 'object') {
+    if (!is._object(headers)) {
       throw new TypeError(`${headers} must be an object.`);
     }
 
@@ -221,7 +233,7 @@ export default class XhrAPI extends XhrAbstract {
   setRequest(request = {}) {
     const self = internal(this);
 
-    if (typeof request !== 'object') {
+    if (!is._object(request)) {
       throw new TypeError(`${request} must be an object.`);
     }
 
