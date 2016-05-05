@@ -4,8 +4,11 @@
     <label for="xhr-id">URL:
       <input type="text" name="url" value="/demo/server.php" id="url">
     </label><br>
-    <label for="timeout">Timeout:
+    <label for="timeout">Timeout for request (sec):
       <input type="text" name="timeout" value="0" id="timeout">
+    </label><br>
+    <label for="timeout-response">Timeout for response (sec):
+      <input type="text" name="timeout-response" value="0" id="timeout-response">
     </label><br>
     <label for="type">Content type:
       <select name="type" id="type">
@@ -24,6 +27,9 @@
         <option value="file">FILE</option>
       </select>
     </label><br>
+    <label for="file" id="file-block" style="display: none">Select file:
+      <input type="file" name="file" id="file"><br>
+    </label>
     <label for="xhr-id">REQUEST id:
       <input type="text" style="width: 400px" name="xhr-id" disabled value="" id="xhr-id">
     </label><br>
@@ -43,44 +49,101 @@
     <script src="../dist/bundle.js"></script>
     <script>
       (function(document, ajax) {
-        var send = document.getElementById('send');
-        var all = document.getElementById('all');
-        var xhrId = document.getElementById('xhr-id');
-        var output = document.getElementById('output');
+        var byId = document.getElementById.bind(document);
+        var send = byId('send');
+        var all = byId('all');
+        var xhrId = byId('xhr-id');
+        var output = byId('output');
+        var file = byId('file');
+        var method = byId('method');
+        var fileBlock = byId('file-block');
         var activeRequest = null;
+        // For checking json object as parameters
+        // with nested objects and arrays.
+        var nestedParams = {
+          'test': 'test2',
+          'foo': 'bar',
+          'nested': {
+            'bar': 'baz',
+            'foo': 'bar',
+            'imarraytoo': [
+              'baz',
+              'foo',
+              'bar'
+            ]
+          },
+          'imarray': [
+            'foo',
+            'bar',
+            'baz'
+          ]
+        };
+        var responseOut = function(response) {
+          return JSON.stringify(response, undefined, 4);
+        };
+        var onProgress = function(percentage) {
+          console.log('Percentage: ' + percentage);
+        };
+        var prepareUrl = function(elementId) {
+          var timeoutResponse = parseInt(byId('timeout-response').value, 10);
+          var url = byId(elementId).value;
+
+          // Set timeout for answers from the server.
+          if (timeoutResponse > 0) {
+            url += '?timeout=' + timeoutResponse;
+          }
+
+          return url;
+        };
+        var prepareFile = function(fieldName) {
+          var files = file.files;
+          var formData = new FormData();
+
+          formData.append(fieldName, files[0], files[0].name);
+
+          return formData;
+        };
 
         send.addEventListener('click', function(event) {
-          var url = document.getElementById('url').value;
-          var method = document.getElementById('method').value;
-          var type = document.getElementById('type').value;
-          var timeout = parseInt(document.getElementById('timeout'), 10);
+          var url = prepareUrl('url');
+          var type = byId('type').value;
+          var timeout = parseInt(byId('timeout').value, 10);
           var parameters = {
             type: type,
+            // For testing custom headers.
             headers: {
               'foo': 'bar',
               'bar': 'baz'
             }
           };
           var request = ajax(url, parameters);
-          var id = request.getXhrId();
+          var params = null;
 
           activeRequest = request;
-          // request.setTimeout(timeout);
+          // Translate timeout from seconds to ms.
+          request
+            .setTimeout(timeout * 1000)
+            .onProgress(onProgress);
 
-          if (timeout > 0) {
-            // set timeout as a request parameter.
+          xhrId.value = request.getXhrId().toString();
+
+          if (method.value === 'file') {
+            if (file.files.length) {
+              params = prepareFile('file');
+            } else {
+              output.innerHTML = 'You should select a file';
+              return;
+            }
           }
 
-          xhrId.value = id.toString();
-          request[method]()
+          request[method.value](params)
             .then(function(response) {
-              // response.status
-              // response.response
-              // ...
-              output.innerHTML = JSON.stringify(response, undefined, 4);
+              console.log(method.value + ' OK');
+              output.innerHTML = responseOut(response);
             })
             .catch(function(response) {
-              output.innerHTML = JSON.stringify(response, undefined, 4);
+              console.log(method.value + ' FAIL');
+              output.innerHTML = responseOut(response);
             });
         });
 
@@ -94,6 +157,11 @@
           var allRequests = ajax().getAllRequests();
 
           output.value = 'All requests';
+        });
+
+        method.addEventListener('change', function(event) {
+          fileBlock.style.display = (method.value === 'file'
+            ? 'inline' : 'hidden');
         });
       })(document, ajax);
     </script>
