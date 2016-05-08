@@ -1,62 +1,124 @@
 <!doctype html>
 <html>
-  <body>
-    <label for="xhr-id">URL:
-      <input type="text" name="url" value="/demo/server.php" id="url">
-    </label><br>
-    <label for="timeout">Timeout for request (sec):
-      <input type="text" name="timeout" value="0" id="timeout">
-    </label><br>
-    <label for="timeout-response">Timeout for response (sec):
-      <input type="text" name="timeout-response" value="0" id="timeout-response">
-    </label><br>
-    <label for="type">Content type:
-      <select name="type" id="type">
-        <option value="text">plain text</option>
-        <option value="json" selected>json</option>
-      </select>
-    </label><br>
-    <label for="method">Method:
-      <select name="method" id="method">
-        <option value="head">HEAD</option>
-        <option value="options">OPTIONS</option>
-        <option value="get" selected>GET</option>
-        <option value="post">POST</option>
-        <option value="put">PUT</option>
-        <option value="del">DELETE</option>
-        <option value="file">FILE</option>
-      </select>
-    </label><br>
-    <label for="file" id="file-block" style="display: none">Select file:
-      <input type="file" name="file" id="file"><br>
-    </label>
-    <label for="xhr-id">REQUEST id:
-      <input type="text" style="width: 400px" name="xhr-id" disabled value="" id="xhr-id">
-    </label><br>
-    <label for="output">Output:
-      <div style="width: 500px; height: 200px; overflow: scroll">
-        <pre>
-          <code id="output"></code>
-        </pre>
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+      integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7"
+      crossorigin="anonymous">
+  </head>
+  <body style="margin: 30px">
+    <div class="col-md-6">
+      <div class="panel panel-warning">
+        <div class="panel-heading">
+          <h3 class="panel-title">Request</h3>
+        </div>
+        <div class="panel-body">
+          <div class="well">
+            <button id="send" class="btn btn-success btn-sm">Send</button>
+            <button id="abort" class="btn btn-warning btn-sm">Abort</button>
+            <button id="abort-all" class="btn btn-danger btn-sm">Abort all</button>
+          </div>
+
+          <div class="well">
+            <button id="all" class="btn btn-info btn-sm">Get all requests</button>
+            <button id="apply-middleware" class="btn btn-info btn-sm">Apply middleware</button>
+            <button id="clear-middleware" class="btn btn-info btn-sm">Clear middleware</button>
+          </div>
+
+          <form>
+            <div class="form-group">
+              <label for="method">Method</label>
+              <select name="method" class="form-control input-sm" id="method">
+                <option value="head">HEAD</option>
+                <option value="options">OPTIONS</option>
+                <option value="get" selected>GET</option>
+                <option value="post">POST</option>
+                <option value="put">PUT</option>
+                <option value="del">DELETE</option>
+                <option value="file">FILE</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="headers">Custom headers (todo)</label>
+            </div>
+            <div class="form-group">
+              <label for="headers">Custom parameters (todo)</label>
+            </div>
+            <div class="form-group">
+              <label for="type">Content type</label>
+              <select name="type" class="form-control input-sm" id="type">
+                <option value="text">plain text</option>
+                <option value="json" selected>json</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="xhr-id">URL</label>
+              <input type="url" class="form-control input-sm" name="url" value="/demo/server.php" id="url">
+            </div>
+            <div class="form-group">
+              <label for="timeout">Timeout for request (sec)</label>
+              <input type="number" class="form-control input-sm" name="timeout" value="0" id="timeout">
+            </div>
+            <div class="form-group">
+              <label for="timeout-response">Timeout for response (sec)</label>
+              <input type="number" class="form-control input-sm" name="timeout-response" value="0" id="timeout-response">
+            </div>
+            <div class="form-group" id="file-block" style="display: none">
+              <label for="file">Select file:</label>
+              <input type="file" name="file" id="file"><br>
+              <div class="progress">
+                <div id="progressbar"
+                     class="progress-bar progress-bar-success progress-bar-striped"
+                     role="progressbar"
+                     aria-valuenow="0"
+                     aria-valuemin="0"
+                     aria-valuemax="100" style="width: 0%">
+                  <span class="sr-only">0% Complete (success)</span>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
-    </label><br><br>
-    <button id="send">Send</button> |
-    <button id="cancel">Cancel</button> |
-    <button id="all">Get all requests</button> |
-    <button id="apply-middleware">Apply middleware</button> |
-    <button id="clear-middleware">Clear middleware</button>
+    </div>
+
+    <div class="col-md-6">
+      <div class="panel panel-warning">
+        <div class="panel-heading">
+          <h3 class="panel-title">Response</h3>
+        </div>
+        <div class="panel-body">
+          <div class="form-group">
+            <label for="xhr-id">REQUEST id (readonly)</label>
+            <input type="text" class="form-control input-sm" name="xhr-id" readonly value="" id="xhr-id">
+          </div>
+          <div class="form-group">
+            <label for="output">Output (readonly):</label>
+            <div style="width: 100%; height: 200px; overflow: scroll">
+              <pre>
+                <code id="output"></code>
+              </pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <script src="../dist/bundle.js"></script>
     <script>
       (function(document, ajax) {
         var byId = document.getElementById.bind(document);
         var send = byId('send');
+        var abort = byId('abort');
+        var abortAll = byId('abort-all');
         var all = byId('all');
         var xhrId = byId('xhr-id');
         var output = byId('output');
         var file = byId('file');
         var method = byId('method');
         var fileBlock = byId('file-block');
+        var progressBar = byId('progressbar');
         var activeRequest = null;
         // For checking json object as parameters
         // with nested objects and arrays.
@@ -79,10 +141,14 @@
           ]
         };
         var responseOut = function(response) {
-          return JSON.stringify(response, undefined, 4);
+          response.response = JSON.parse(response.response);
+          return JSON.stringify(response, undefined, 2);
+        };
+        var setProgress = function(percentage) {
+          progressBar.style.width = parseInt(percentage, 10);
         };
         var onProgress = function(percentage) {
-          console.log('Percentage: ' + percentage);
+          setProgress(percentage);
         };
         var prepareUrl = function(elementId) {
           var timeoutResponse = parseInt(byId('timeout-response').value, 10);
@@ -146,21 +212,29 @@
             });
         });
 
-        cancel.addEventListener('click', function(event) {
+        abort.addEventListener('click', function(event) {
           if (activeRequest !== null) {
             activeRequest.cancel();
           }
         });
 
+        abortAll.addEventListener('click', function(event) {
+          ajax().abortAll();
+        });
+
         all.addEventListener('click', function(event) {
           var allRequests = ajax().getAllRequests();
 
-          output.value = 'All requests';
+          output.innerHTML = JSON.stringify(allRequests);
         });
 
         method.addEventListener('change', function(event) {
+          if (method.value === 'file') {
+            setProgress(0);
+          }
+
           fileBlock.style.display = (method.value === 'file'
-            ? 'inline' : 'hidden');
+            ? 'block' : 'hidden');
         });
       })(document, ajax);
     </script>

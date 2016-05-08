@@ -22,7 +22,7 @@ export function ajax(url, parameters = {}) {
   let xhrApi;
   let meta;
 
-  if (is._undefined(parameters.type) && contentTypes[parameters.type]) {
+  if (!is._undefined(parameters.type) && contentTypes[parameters.type]) {
     settings.headers['Content-Type'] = contentTypes[parameters.type];
   }
 
@@ -73,7 +73,7 @@ export function ajax(url, parameters = {}) {
     const self = this;
 
     if (is._undefined(xhrApi)) {
-      throw new Error('API was not instantiated.');
+      return () => {};
     }
 
     switch (name) {
@@ -120,7 +120,7 @@ export function ajax(url, parameters = {}) {
     const response = {};
 
     _requests.forEach(value => {
-      if (is._undefined(value)) {
+      if (!is._undefined(value)) {
         response[value] = _meta.get(value);
       }
     });

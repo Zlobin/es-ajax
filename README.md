@@ -162,7 +162,7 @@ You can grab minified versions of es-ajax from /dist path after running `webpack
 ## TODO
 
 1. Middleware
-2. Send file(s)
+2. Send more than one file
 3. Add more tests
 4. Finish demo
 5. Singleton request
