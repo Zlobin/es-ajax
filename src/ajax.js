@@ -117,11 +117,14 @@ export function ajax(url, parameters = {}) {
   }
 
   function getAllRequests() {
-    const response = {};
+    const response = [];
 
     _requests.forEach(value => {
       if (!is._undefined(value)) {
-        response[value] = _meta.get(value);
+        response.push(Object.assign({},
+        _meta.get(value), {
+          id: value.toString()
+        }));
       }
     });
 

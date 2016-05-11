@@ -263,9 +263,8 @@
         });
 
         all.addEventListener('click', function(event) {
-          var allRequests = ajax().getAllRequests();
-
-          output.innerHTML = JSON.stringify(allRequests);
+          output.innerHTML = JSON.stringify(ajax().getAllRequests(),
+            undefined, 2);
         });
 
         method.addEventListener('change', function(event) {
