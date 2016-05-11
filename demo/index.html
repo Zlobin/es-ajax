@@ -40,7 +40,9 @@
               </select>
             </div>
             <div class="form-group">
-              <label for="headers">Custom headers (todo)</label>
+              <label for="headers">Custom headers</label><br>
+              <a href="#" id="add-header">Add a header</a>
+              <div id="headers"></div>
             </div>
             <div class="form-group">
               <label for="headers">Custom parameters (todo)</label>
@@ -118,6 +120,8 @@
         var file = byId('file');
         var method = byId('method');
         var fileBlock = byId('file-block');
+        var addHeader = byId('add-header');
+        var headers = byId('headers');
         var progressBar = byId('progressbar');
         var activeRequest = null;
         // For checking json object as parameters
@@ -169,6 +173,20 @@
 
           return formData;
         };
+        var getHeaders = function() {
+          var types = document.getElementsByName('header-type[]');
+          var values = document.getElementsByName('header-value[]');
+          var customHeaders = {};
+          var i = types.length;
+
+          while (i--) {
+            if (types[i].value !== '' && values[i].value !== '') {
+              customHeaders[types[i].value] = values[i].value;
+            }
+          }
+
+          return customHeaders;
+        };
 
         send.addEventListener('click', function(event) {
           var url = prepareUrl('url');
@@ -177,10 +195,7 @@
           var parameters = {
             type: type,
             // For testing custom headers.
-            headers: {
-              'foo': 'bar',
-              'bar': 'baz'
-            }
+            headers: getHeaders()
           };
           var request = ajax(url, parameters);
           var params = null;
@@ -210,6 +225,31 @@
               console.log(method.value + ' FAIL');
               output.innerHTML = responseOut(response);
             });
+        });
+
+        addHeader.addEventListener('click', function(event) {
+          var removeHeaders, i;
+
+          event.preventDefault();
+          headers.insertAdjacentHTML('afterend', [
+            '<div>',
+              'Name <input type="text" name="header-type[]">',
+              ' = ',
+              'Value <input type="text" name="header-value[]">',
+              ' <a href="#" class="remove-header" title="Remove">[-]</a>',
+            '</div>'
+          ].join(''));
+
+          removeHeaders = document.getElementsByClassName('remove-header');
+          i = removeHeaders.length;
+
+          while (i--) {
+            removeHeaders[i].removeEventListener('click');
+            removeHeaders[i].addEventListener('click', function(event) {
+              this.removeEventListener('click');
+              this.parentElement.remove();
+            });
+          }
         });
 
         abort.addEventListener('click', function(event) {

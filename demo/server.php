@@ -5,16 +5,26 @@
   $override = $_SERVER['HTTP_X_HTTP_METHOD'];
   $method = $_SERVER['REQUEST_METHOD'];
   $uploadDir = 'uploads/';
+  $requestHeaders = function() {
+    $ret = [];
+
+    foreach (getallheaders() as $name => $value) {
+      $ret[$name] = $value;
+    }
+
+    return $ret;
+  };
 
   $response = [
     'foo' => 'bar',
-    'request' => [
+    'requestData' => [
       'method' => $method,
       'type' => $type,
       'isFile' => isset($_FILES, $_FILES['file']),
       // If http server doesn't allow PUT, DELETE methods.
       'isOverriden' => isset($override),
-      'overrideMethod' => $override
+      'overrideMethod' => $override,
+      'headers' => $requestHeaders()
     ]
   ];
 
