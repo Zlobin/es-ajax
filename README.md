@@ -1,5 +1,5 @@
 
-# Ajax requests in JavaScript
+# Ajax requests in JavaScript [![Build Status](https://travis-ci.org/Zlobin/es-ajax.png?branch=master)](https://travis-ci.org/Zlobin/es-ajax)
 
 ## Synopsis
 
@@ -11,17 +11,26 @@ The library is affording have full control for each external requests. Through A
 
 ## Dependencies
 
-Dependencies: [object-hash](https://www.npmjs.com/package/object-hash), [qs](https://www.npmjs.com/package/qs)
+Dependencies: [object-hash](https://www.npmjs.com/package/object-hash), [qs](https://www.npmjs.com/package/qs), [es-middleware](https://www.npmjs.com/package/es-middleware)
+
+## Installation
+
+`npm i --save es-ajax`
+or
+`git clone https://github.com/Zlobin/es-ajax.git`
+`cd es-ajax && npm i && webpack`
 
 ## Examples
 
 ```javascript
 var ajax = require('es-ajax');
 ```
-Or
+Or after running `npm i && webpack` inside library path:
 ```html
 <script src="<PATH/TO/LIBRARY>/dist/bundle.js">
 ```
+
+You can test some stuff inside /demo/ path.
 
 ```js
 // GET
@@ -52,30 +61,21 @@ ajax('/some/url')
   })
   .then(function(response) {
     // response.headers
-    // response.status
-    // response.statusText
-    // response.type
-    // response.url
+    // response.response
 
-    if (response.status !== 200) {
-      console.log('Something wrong status:' + response.status);
-    } else {
-      response
-        .json()
-        .then(function(data) {
-          console.log(data);
-        });
-    }
+    // ... some stuff
   })
   .catch(function(err) {
     console.log(err);
   });
 ```
 
+You can change content-type of request, available types: 'json', 'text', 'html'
+
 ```js
 ajax('/some/url', {
-  type: 'json'
-})
+    type: 'json'
+  })
   .get()
   .then(function() {
     // ...
@@ -85,14 +85,31 @@ ajax('/some/url', {
   });
 ```
 
-Middleware is calling before a request was sent. It can cancel request, change URL, headers before sending.
-May be used, for instance, when you want to to some cache library. An example:
+Or you can add type manually, via headers:
+
 ```js
-var cache = function(headers, request, time) {
+ajax('/some/url', {
+    headers: {
+      'Content-type': 'my-type'
+    }
+  })
+  .get()
+  .then(function() {
+    // ...
+  })
+  .catch(function() {
+    // ...
+  });
+```
+
+:TODO
+Middleware is the programming pattern of providing hooks with a resume callback. It will be calling before a request was sent. It is able to cancel request, change URL and headers before sending. May be used, for instance, when you want to use some cache library, allow only some http-methods, like GET and POST, for instance. Some examples:
+```js
+var cache = function(next) {
   var response = null;
 
   // For instance, we don't do cache for URL what contains "noCache" parameter.
-  if (request.url.indexOf('noCache') > 0) {
+  if (this.request.url.indexOf('noCache') > 0) {
     // Check if we already have cached resulst from some MyCache library.
     response = MyCache.get({
       url: request.url,
@@ -103,16 +120,18 @@ var cache = function(headers, request, time) {
       console.log('Data from cache.');
       // Do not send request to the server.
       // Return cached response.
+      // @todo
     } else {
       console.log('Send request to the server.');
-      // Send request.
-      // Add response to the cache.
+      next();
     }
+  } else {
+    next();
   }
 };
 
 ajax()
-  .applyMiddleware([cache]);
+  .use([cache]);
 
 // First request will be send to the server.
 ajax('/foo/bar')
@@ -122,7 +141,43 @@ ajax('/foo/bar')
     ajax('/foo/bar')
       .get();    
   })
-  .catch();
+  .catch(function() {
+    // ...
+  });
+```
+
+Or if you want to allow to use only GET requests:
+
+```js
+var onlyGet = function(request, next) {
+  if (request.method === 'GET') {
+    next();
+  }
+
+  throw new Error('Allows only GET methods');
+  // ...
+};
+
+ajax()
+  .use([onlyGet]);
+
+ajax('/foo/bar')
+  .get()
+  .then(function() {
+    // ... succeed
+  })
+  .catch(function() {
+    // ...
+  });
+
+  ajax('/foo/bar')
+    .get()
+    .then(function() {
+      // ...
+    })
+    .catch(function() {
+      // ... failed
+    });
 ```
 
 ## API
@@ -133,7 +188,7 @@ ajax('/foo/bar')
 - **<code>getXhrMeta</code> Get meta info for the current request**
 - **<code>getAllRequests</code> Get info about each sent request**
 - **<code>setTimeout</code> Set timeout when reqeust should be canceled automatically**
-- **<code>applyMiddleware</code> no description**
+- **<code>use</code> add middleware functions**
 
 ##### Non-static, should be used with a XHR (fetch) instance.
 - **<code>setOverride</code> Set override for DELETE, PUT requests**
@@ -151,10 +206,6 @@ ajax('/foo/bar')
 
 Tests are performed using "mocha", "sinon", "expect" libraries, PhantomJS as a browser and "karma" as a server. Run `npm test`.
 
-## Building the documentation
-
-You can use JSDoc comments found within the source code.
-
 ## Minifying
 
 You can grab minified versions of es-ajax from /dist path after running `webpack`.
@@ -164,5 +215,4 @@ You can grab minified versions of es-ajax from /dist path after running `webpack
 1. Middleware
 2. Send more than one file
 3. Add more tests
-4. Finish demo
-5. Singleton request
+4. Singleton request

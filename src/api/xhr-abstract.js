@@ -39,10 +39,6 @@ export default class XhrAbstract {
     this.setHeaders(methodsOverride(methodName));
   }
 
-  applyMiddleware() {
-    // ...
-  }
-
   head() {
     this.setRequest({
       method: methods.head,
@@ -112,6 +108,14 @@ export default class XhrAbstract {
     }
 
     return this.send();
+  }
+
+  setMiddlewareRun(middleware) {
+    if (!is._function(middleware)) {
+      throw new TypeError('Parameter must be a function.');
+    }
+
+    this.run = middleware;
   }
 
   send() {

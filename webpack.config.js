@@ -5,7 +5,7 @@ const webpack = require('webpack');
 const fs = require('fs');
 
 const env = process.env.NODE_ENV || 'development';
-const isProduction = false; //(env === 'production');
+const isProduction = (env === 'production');
 
 let plugins = [
   new webpack.optimize.OccurenceOrderPlugin(),
@@ -49,7 +49,10 @@ module.exports = {
     loaders: [
       {
         test: /\.js$/,
-        include: path.join(__dirname, 'src'),
+        include: [
+          path.join(__dirname, 'src'),
+          /node_modules\/(es-middleware)/
+        ],
         loaders: ['babel']
       }
     ]

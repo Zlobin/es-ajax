@@ -3,11 +3,12 @@ import factory from './utils/factory';
 import { contentTypes } from './utils/content-types';
 import objectHash from 'object-hash';
 import { is } from './utils/is';
+import Middleware from 'es-middleware';
 
 const _requests = new Set();
 const _meta = new Map();
+const mw = new Middleware();
 let _timeout = 0;
-let _middleware = [];
 
 export function ajax(url, parameters = {}) {
   const defaults = {
@@ -41,6 +42,7 @@ export function ajax(url, parameters = {}) {
   if (!xhrApi && url) {
     // Create new instance.
     xhrApi = factory(settings.api, url, settings.request, settings.headers);
+    xhrApi.setMiddlewareRun(mw.run);
     xhrApi.onBeforeSend(params => {
       const { headers, request, time } = params;
       const hash = objectHash({
@@ -63,10 +65,6 @@ export function ajax(url, parameters = {}) {
 
       xhrApi.setTimeout(_timeout);
     });
-
-    if (_middleware.length) {
-      xhrApi.applyMiddleware(_middleware);
-    }
   }
 
   function proxy(name) {
@@ -145,8 +143,8 @@ export function ajax(url, parameters = {}) {
     return this;
   }
 
-  function applyMiddleware(functions) {
-    _middleware = functions;
+  function use(functions) {
+    mw.use(functions);
 
     return this;
   }
@@ -158,7 +156,7 @@ export function ajax(url, parameters = {}) {
     getXhrMeta,
     getAllRequests,
     setTimeout,
-    applyMiddleware,
+    use,
     // Non-static, should be used with a XHR (fetch) instance.
     setOverride: proxy('setOverride'),
     options: proxy('options'),

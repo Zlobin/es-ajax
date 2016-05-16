@@ -6,14 +6,6 @@ import { methods } from './utils/methods';
 import asObject from './utils/as-object';
 import { is } from '../utils/is';
 
-/*
-  XHR2 specification.
-  @link https://xhr.spec.whatwg.org/
-
-  XHR2 examples.
-  @link http://www.html5rocks.com/en/tutorials/file/xhr2/
-*/
-
 export default class XhrAPI extends XhrAbstract {
   constructor(url, request = {}, headers = {}) {
     super();
@@ -22,7 +14,6 @@ export default class XhrAPI extends XhrAbstract {
 
     self._shouldOverride = true;
     self._onBeforeSend = null;
-    self._middleware = [];
     self._onProgress = null;
     self._timeout = null;
     self._defaultHeaders = {
@@ -46,20 +37,6 @@ export default class XhrAPI extends XhrAbstract {
       .setRequest(request);
 
     return this;
-  }
-
-  applyMiddleware(functions) {
-    if (!is._array(functions)) {
-      throw new Error('Parameter should be an Array.');
-    }
-
-    functions.forEach(
-      func => {
-        if (is._function(func)) {
-          self._middleware.push(func);
-        }
-      }
-    );
   }
 
   setOverride(method = [], callback = () => {}) {
@@ -88,6 +65,7 @@ export default class XhrAPI extends XhrAbstract {
   }
 
   send(isFile = false) {
+    // @todo wrap around this.run
     const self = internal(this);
     const xhr = self._xhr;
     const { method, async, body } = self._requests;
@@ -170,17 +148,6 @@ export default class XhrAPI extends XhrAbstract {
         }
 
         xhr.timeout = self._timeout;
-
-        /*
-        @todo middleware
-        if (self._middleware.length) {
-          self._middleware.forEach(
-            func => {
-              func(params);
-            }
-          );
-        }
-        */
 
         xhr.send(data);
       } catch (error) {
