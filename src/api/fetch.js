@@ -53,6 +53,10 @@ export default class FetchAPI extends XhrAbstract {
     throw new Error('Currently it is not possible to set timeout for "fetch".');
   }
 
+  getHeaders() {
+    return internal(this)._headers;
+  }
+
   hasHeader(header) {
     return internal(this)._headers.has(header);
   }
@@ -71,6 +75,10 @@ export default class FetchAPI extends XhrAbstract {
     return this;
   }
 
+  getRequests() {
+    return internal(this)._requests;
+  }
+
   setRequest(request = {}) {
     // const self = internal(this);
 
@@ -84,5 +92,15 @@ export default class FetchAPI extends XhrAbstract {
     // );
 
     return this;
+  }
+
+  setUrl(url) {
+    internal(this)._url = url;
+
+    return this;
+  }
+
+  getUrl() {
+    return internal(this)._url;
   }
 }

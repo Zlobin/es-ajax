@@ -64,10 +64,10 @@ export default class XhrAPI extends XhrAbstract {
     internal(this)._timeout = timeout;
   }
 
-  send(isFile = false) {
-    // @todo wrap around this.run
+  sendRequest() {
     const self = internal(this);
     const xhr = self._xhr;
+    const isFile = self._isFile;
     const { method, async, body } = self._requests;
     // Split an object into query-string like ?foo=bar&bar=baz
     const data = is._object(body) && !isFile ? qs.stringify(body) : body;
@@ -156,6 +156,14 @@ export default class XhrAPI extends XhrAbstract {
     });
   }
 
+  send(isFile = false) {
+    internal(this)._isFile = isFile;
+
+    return this.middleware
+      .setContext(this)
+      .run(this.sendRequest.bind(this));
+  }
+
   cancel() {
     const xhr = internal(this)._xhr;
 
@@ -175,6 +183,10 @@ export default class XhrAPI extends XhrAbstract {
     internal(this)._onProgress = callback;
 
     return this;
+  }
+
+  getHeaders() {
+    return internal(this)._headers;
   }
 
   hasHeader(header) {
@@ -197,6 +209,10 @@ export default class XhrAPI extends XhrAbstract {
     return this;
   }
 
+  getRequests() {
+    return internal(this)._requests;
+  }
+
   setRequest(request = {}) {
     const self = internal(this);
 
@@ -211,5 +227,15 @@ export default class XhrAPI extends XhrAbstract {
     );
 
     return this;
+  }
+
+  setUrl(url) {
+    internal(this)._url = url;
+
+    return this;
+  }
+
+  getUrl() {
+    return internal(this)._url;
   }
 }

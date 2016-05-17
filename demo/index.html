@@ -123,6 +123,8 @@
         var addHeader = byId('add-header');
         var headers = byId('headers');
         var progressBar = byId('progressbar');
+        var applyMiddleware = byId('apply-middleware');
+        var clearMiddleware = byId('clear-middleware');
         var activeRequest = null;
         // For checking json object as parameters
         // with nested objects and arrays.
@@ -145,7 +147,10 @@
           ]
         };
         var responseOut = function(response) {
-          response.response = JSON.parse(response.response);
+          try {
+            response.response = JSON.parse(response.response);
+          } catch (e) {}
+
           return JSON.stringify(response, undefined, 2);
         };
         var setProgress = function(percentage) {
@@ -186,6 +191,19 @@
           }
 
           return customHeaders;
+        };
+        var middleware = function(next) {
+          var requests = this.getRequests();
+
+          return requests.method === 'GET' ?
+            next() :
+            new Promise(function(resolve, reject) {
+              reject({
+                status: 0,
+                response: 'Only "GET" requests',
+                headers: []
+              });
+            });
         };
 
         send.addEventListener('click', function(event) {
@@ -274,6 +292,14 @@
 
           fileBlock.style.display = (method.value === 'file'
             ? 'block' : 'hidden');
+        });
+
+        applyMiddleware.addEventListener('click', function() {
+          ajax().use(middleware);
+        });
+
+        clearMiddleware.addEventListener('click', function() {
+          location.reload();
         });
       })(document, ajax);
     </script>

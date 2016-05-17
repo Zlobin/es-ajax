@@ -42,7 +42,7 @@ export function ajax(url, parameters = {}) {
   if (!xhrApi && url) {
     // Create new instance.
     xhrApi = factory(settings.api, url, settings.request, settings.headers);
-    xhrApi.setMiddlewareRun(mw.run);
+    xhrApi.setMiddleware(mw);
     xhrApi.onBeforeSend(params => {
       const { headers, request, time } = params;
       const hash = objectHash({

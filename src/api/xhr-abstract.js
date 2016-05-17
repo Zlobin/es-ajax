@@ -5,6 +5,14 @@ import { is } from '../utils/is';
 
 export default class XhrAbstract {
   constructor(/* url, request = {}, headers = {} */) {
+    if (is._undefined(this.middleware)) {
+      this.middleware = {};
+      this.middleware = {
+        run: () => {},
+        setContext: () => {}
+      };
+    }
+
     return this;
   }
 
@@ -110,12 +118,8 @@ export default class XhrAbstract {
     return this.send();
   }
 
-  setMiddlewareRun(middleware) {
-    if (!is._function(middleware)) {
-      throw new TypeError('Parameter must be a function.');
-    }
-
-    this.run = middleware;
+  setMiddleware(middleware) {
+    this.middleware = middleware;
   }
 
   send() {
@@ -130,11 +134,19 @@ export default class XhrAbstract {
     //
   }
 
+  getHeaders() {
+    //
+  }
+
   hasHeader(/* header */) {
     //
   }
 
   setHeaders(/* headers */) {
+    //
+  }
+
+  getRequests() {
     //
   }
 
@@ -147,6 +159,14 @@ export default class XhrAbstract {
   }
 
   onBeforeSend(/* callback */) {
-    // ...
+    //
+  }
+
+  getUrl() {
+    //
+  }
+
+  setUrl(/* url */) {
+    //
   }
 }

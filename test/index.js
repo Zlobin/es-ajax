@@ -25,7 +25,7 @@ function prepareRespond(url, method = 'GET') {
 
 function respond() {
   fakeServer.respond();
-  console.log('fakeServer', fakeServer.requests[fakeServer.requests.length - 1].requestHeaders);
+  // console.log('fakeServer', fakeServer.requests[fakeServer.requests.length - 1].requestHeaders);
   fakeServer.restore();
 }
 
@@ -58,7 +58,7 @@ describe('1. es-ajax test', () => {
       'getAllRequests',
       'setOverride',
       'setTimeout',
-      'applyMiddleware'
+      'use'
     ].forEach(method =>
       it(`1.1.${++i}: should have "${method}" method`, () =>
         expect(ajax(URL)[method]).toBeA('function'))

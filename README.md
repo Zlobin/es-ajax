@@ -15,10 +15,10 @@ Dependencies: [object-hash](https://www.npmjs.com/package/object-hash), [qs](htt
 
 ## Installation
 
-`npm i --save es-ajax`
-or
-`git clone https://github.com/Zlobin/es-ajax.git`
-`cd es-ajax && npm i && webpack`
+`npm i --save es-ajax`<br>
+or<br>
+`git clone https://github.com/Zlobin/es-ajax.git`<br>
+`cd es-ajax && npm i && webpack`<br>
 
 ## Examples
 
@@ -102,8 +102,9 @@ ajax('/some/url', {
   });
 ```
 
-:TODO
-Middleware is the programming pattern of providing hooks with a resume callback. It will be calling before a request was sent. It is able to cancel request, change URL and headers before sending. May be used, for instance, when you want to use some cache library, allow only some http-methods, like GET and POST, for instance. Some examples:
+Middleware is the programming pattern of providing hooks with a resume callback. It will be calling before a request was sent. It is able to cancel request, change URL and headers before sending. May be used, for instance, when you want to use some cache library, allow only some http-methods, like GET and POST, for instance.
+
+Some examples:
 ```js
 var cache = function(next) {
   var response = null;
@@ -117,16 +118,21 @@ var cache = function(next) {
     });
 
     if (response !== null) {
-      console.log('Data from cache.');
+      console.log('Data from a cache.');
       // Do not send request to the server.
       // Return cached response.
-      // @todo
+      return new Promise(function(resolse, reject) {
+        resolse({
+          response: response,
+          headers: []
+        });
+      });
     } else {
       console.log('Send request to the server.');
-      next();
+      return next();
     }
   } else {
-    next();
+    return next();
   }
 };
 
@@ -139,7 +145,13 @@ ajax('/foo/bar')
   .then(function() {
     // Second one - not. We will get data immediately from a cache.
     ajax('/foo/bar')
-      .get();    
+      .get()
+      .then(function() {
+        // ...
+      })
+      .catch(function() {
+        // ...
+      });
   })
   .catch(function() {
     // ...
@@ -149,13 +161,14 @@ ajax('/foo/bar')
 Or if you want to allow to use only GET requests:
 
 ```js
-var onlyGet = function(request, next) {
-  if (request.method === 'GET') {
-    next();
-  }
-
-  throw new Error('Allows only GET methods');
-  // ...
+var onlyGet = function(next) {
+  return this.request.method === 'GET' ?
+    next() : new Promise(function(resolse, reject) {
+      reject({
+        response: 'Only "GET" methods is available.',
+        headers: []
+      });
+    });
 };
 
 ajax()
@@ -171,7 +184,7 @@ ajax('/foo/bar')
   });
 
   ajax('/foo/bar')
-    .get()
+    .post()
     .then(function() {
       // ...
     })
@@ -212,7 +225,7 @@ You can grab minified versions of es-ajax from /dist path after running `webpack
 
 ## TODO
 
-1. Middleware
-2. Send more than one file
-3. Add more tests
-4. Singleton request
+1. Send more than one file
+2. Add more tests
+3. Singleton request
+4. Add custom parameters to the demo
