@@ -121,11 +121,9 @@ var cache = function(next) {
       console.log('Data from a cache.');
       // Do not send request to the server.
       // Return cached response.
-      return new Promise(function(resolse, reject) {
-        resolse({
-          response: response,
-          headers: []
-        });
+      return Promise.resolse({
+        response: response,
+        headers: []
       });
     } else {
       console.log('Send request to the server.');
@@ -163,11 +161,11 @@ Or if you want to allow to use only GET requests:
 ```js
 var onlyGet = function(next) {
   return this.request.method === 'GET' ?
-    next() : new Promise(function(resolse, reject) {
-      reject({
-        response: 'Only "GET" methods is available.',
-        headers: []
-      });
+    next() :
+    Promise.reject({
+      status: 0,
+      response: 'Available only "GET" requests',
+      headers: []
     });
 };
 
@@ -229,3 +227,4 @@ You can grab minified versions of es-ajax from /dist path after running `webpack
 2. Add more tests
 3. Singleton request
 4. Add custom parameters to the demo
+5. Add polyfill for IE(10, 11) for Promises.

@@ -111,6 +111,7 @@
     <script>
       (function(document, ajax) {
         var byId = document.getElementById.bind(document);
+
         var send = byId('send');
         var abort = byId('abort');
         var abortAll = byId('abort-all');
@@ -125,6 +126,7 @@
         var progressBar = byId('progressbar');
         var applyMiddleware = byId('apply-middleware');
         var clearMiddleware = byId('clear-middleware');
+
         var activeRequest = null;
         // For checking json object as parameters
         // with nested objects and arrays.
@@ -146,6 +148,7 @@
             'baz'
           ]
         };
+
         var responseOut = function(response) {
           try {
             response.response = JSON.parse(response.response);
@@ -197,12 +200,10 @@
 
           return requests.method === 'GET' ?
             next() :
-            new Promise(function(resolve, reject) {
-              reject({
-                status: 0,
-                response: 'Only "GET" requests',
-                headers: []
-              });
+            Promise.reject({
+              status: 0,
+              response: 'Available only "GET" requests',
+              headers: []
             });
         };
 

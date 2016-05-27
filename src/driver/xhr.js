@@ -6,7 +6,7 @@ import { methods } from './utils/methods';
 import asObject from './utils/as-object';
 import { is } from '../utils/is';
 
-export default class XhrAPI extends XhrAbstract {
+export default class XhrDriver extends XhrAbstract {
   constructor(url, request = {}, headers = {}) {
     super();
 
