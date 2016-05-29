@@ -1,7 +1,7 @@
 {
   "name": "es-ajax",
   "description": "Ajax (fetch or xhr2) with promises - an useful JavaScript library for convenient work with ajax requests in a browser.",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "main": "src/index.js",
   "files": [
     "src",
