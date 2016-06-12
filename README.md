@@ -15,7 +15,7 @@ Dependencies: [object-hash](https://www.npmjs.com/package/object-hash), [qs](htt
 
 ## Installation
 
-`npm i --save es-ajax`<br>
+`npm i -S es-ajax`<br>
 or<br>
 `git clone https://github.com/Zlobin/es-ajax.git`<br>
 `cd es-ajax && npm i && webpack`<br>
