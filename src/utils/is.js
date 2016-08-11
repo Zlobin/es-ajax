@@ -1,4 +1,4 @@
-export const is = {
+export default {
   _undefined(value) {
     return value === void 0;
   },

@@ -1,4 +1,4 @@
-export const methods = {
+export default {
   head: 'HEAD',
   options: 'OPTIONS',
   get: 'GET',

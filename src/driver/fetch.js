@@ -1,7 +1,9 @@
+/* global fetch, Headers */
+
 import XhrAbstract from './xhr-abstract';
 import internal from './utils/internal';
-import { methods } from './utils/methods';
-import { is } from '../utils/is';
+import methods from './utils/methods';
+import is from '../utils/is';
 
 export default class FetchDriver extends XhrAbstract {
   constructor(url, request = {}, headers = {}) {

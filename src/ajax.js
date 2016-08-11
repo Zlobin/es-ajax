@@ -1,16 +1,17 @@
+import objectHash from 'object-hash';
+import Middleware from 'es-middleware';
+
 import guid from './utils/guid';
 import factory from './utils/factory';
-import { contentTypes } from './utils/content-types';
-import objectHash from 'object-hash';
-import { is } from './utils/is';
-import Middleware from 'es-middleware';
+import contentTypes from './utils/content-types';
+import is from './utils/is';
 
 const _requests = new Set();
 const _meta = new Map();
 const mw = new Middleware();
 let _timeout = 0;
 
-export function ajax(url, parameters = {}) {
+export default function ajax(url, parameters = {}) {
   const defaults = {
     isSingleton: false,
     api: 'xhr', // xhr || fetch

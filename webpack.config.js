@@ -25,7 +25,7 @@ if (isProduction) {
 }
 
 module.exports = {
-  devtool: !isProduction ? 'cheap-source-map' : 'eval',
+  devtool: isProduction ? 'cheap-source-map' : 'eval',
   entry: './src/index.js',
   watch: false,
   output: {

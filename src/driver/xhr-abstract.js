@@ -1,7 +1,7 @@
-import { methods } from './utils/methods';
+import methods from './utils/methods';
 import internal from './utils/internal';
 import methodsOverride from './utils/methods-override';
-import { is } from '../utils/is';
+import is from '../utils/is';
 
 export default class XhrAbstract {
   constructor(/* url, request = {}, headers = {} */) {

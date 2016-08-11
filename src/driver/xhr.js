@@ -1,10 +1,12 @@
+/* global XMLHttpRequest */
+
 import qs from 'qs';
 import internal from './utils/internal';
 import XhrAbstract from './xhr-abstract';
 import { rejectInterface, resolveInterface } from './utils/resolve-reject-interface';
-import { methods } from './utils/methods';
+import methods from './utils/methods';
 import asObject from './utils/as-object';
-import { is } from '../utils/is';
+import is from '../utils/is';
 
 export default class XhrDriver extends XhrAbstract {
   constructor(url, request = {}, headers = {}) {
